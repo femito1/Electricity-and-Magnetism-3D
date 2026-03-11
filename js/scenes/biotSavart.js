@@ -205,6 +205,9 @@ export default [
         { step: 'Integrate from θ₁ to θ₂', latex: 'B = \\frac{\\mu_0 I}{4\\pi d} \\int_{\\theta_1}^{\\theta_2} \\cos\\theta\\, d\\theta = \\frac{\\mu_0 I}{4\\pi d}(\\sin\\theta_2 - \\sin\\theta_1)' }
       ]}
     ],
+    limits: [
+      { label: 'L → ∞', slider: 'L', target: 8, annotation: 'Becomes the infinite straight wire: B = μ₀I/(2πd)', ref: 'wire-biot-savart' }
+    ],
     sliders: [
       { id: 'L', label: 'Wire Length L', min: 2, max: 8, default: 4, step: 0.5, unit: 'm' },
       { id: 'I', label: 'Current I', min: 1, max: 10, default: 5, step: 0.5, unit: 'A' },

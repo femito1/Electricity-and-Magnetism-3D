@@ -18,6 +18,10 @@
       <div class="sidebar-header">
         <span class="logo">E&amp;M</span>
         <span class="logo-sub">3D Visualizer</span>
+        <div class="sidebar-header-actions">
+          <button id="btn-formula-sheet" class="sidebar-action-btn" title="Formula Study Sheet">&#128196; Study Sheet</button>
+          <button id="btn-concept-map" class="sidebar-action-btn" title="Concept Map">&#128279; Concept Map</button>
+        </div>
       </div>
       <div id="sidebar-search">
         <input type="text" placeholder="Search problems..." id="search-input">
@@ -44,11 +48,38 @@
         <p id="scene-desc">Select a problem from the sidebar to begin exploring electricity and magnetism in 3D.</p>
       </div>
       <div id="equations-section" class="panel-section"></div>
+      <div id="limits-section" class="panel-section"></div>
       <div id="params-section" class="panel-section">
         <h3>Parameters</h3>
         <div id="sliders"></div>
       </div>
     </aside>
+  </div>
+
+  <!-- Formula Sheet Overlay -->
+  <div id="formula-sheet-overlay" class="full-overlay">
+    <div class="overlay-header">
+      <h2>Formula Study Sheet</h2>
+      <div class="overlay-header-actions">
+        <button id="formula-sheet-print" class="sidebar-action-btn">&#128424; Print</button>
+        <button id="formula-sheet-close" class="overlay-close-btn">&times;</button>
+      </div>
+    </div>
+    <div class="overlay-toolbar">
+      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-select-all" checked> Select All</label>
+      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-derivations"> Include Derivations</label>
+    </div>
+    <div id="formula-sheet-chapters" class="overlay-toolbar chapter-checks"></div>
+    <div id="formula-sheet-content" class="sheet-content"></div>
+  </div>
+
+  <!-- Concept Map Overlay -->
+  <div id="concept-map-overlay" class="full-overlay">
+    <div class="overlay-header">
+      <h2>Concept Map</h2>
+      <button id="concept-map-close" class="overlay-close-btn">&times;</button>
+    </div>
+    <div id="concept-map-container"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>

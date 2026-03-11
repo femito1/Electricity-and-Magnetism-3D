@@ -48,6 +48,7 @@ export default class SceneManager {
 
     this.sceneObjects = [];
     this.sceneLabels = [];
+    this._disposeCallbacks = [];
     this.currentScene = null;
     this.currentState = null;
     this.currentCtx = null;
@@ -94,9 +95,23 @@ export default class SceneManager {
     return {
       scene: this.scene,
       camera: this.camera,
+      renderer: this.renderer,
+      rendererDom: this.renderer.domElement,
       THREE,
       params: params || {},
       toggles: toggles || {},
+      onDispose(fn) { self._disposeCallbacks.push(fn); },
+      removeMesh(mesh) {
+        self.scene.remove(mesh);
+        const idx = self.sceneObjects.indexOf(mesh);
+        if (idx !== -1) self.sceneObjects.splice(idx, 1);
+        mesh.traverse(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            (Array.isArray(child.material) ? child.material : [child.material]).forEach(m => m.dispose());
+          }
+        });
+      },
       addMesh(mesh) {
         self.scene.add(mesh);
         self.sceneObjects.push(mesh);
@@ -159,6 +174,8 @@ export default class SceneManager {
   }
 
   clearSceneObjects() {
+    for (const fn of this._disposeCallbacks) { try { fn(); } catch(_) {} }
+    this._disposeCallbacks = [];
     for (const obj of this.sceneObjects) {
       this.scene.remove(obj);
       obj.traverse(child => {

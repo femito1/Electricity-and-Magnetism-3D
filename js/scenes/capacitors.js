@@ -112,7 +112,7 @@ export default [
       {
         label: 'Capacitance', latex: 'C = \\frac{2\\pi\\varepsilon_0 L}{\\ln(b/a)}',
         derivation: [
-          { step: '$E$ from Gauss\'s law for cylindrical symmetry', latex: 'E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}' },
+          { step: '$E$ from Gauss\'s law for cylindrical symmetry (3.8)', latex: 'E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}', ref: 'cyl-shell-gauss' },
           { step: 'Integrate $E$ from $a$ to $b$ for voltage', latex: 'V = \\int_a^b \\frac{\\lambda}{2\\pi\\varepsilon_0 r}\\,dr = \\frac{\\lambda}{2\\pi\\varepsilon_0}\\ln\\!\\left(\\frac{b}{a}\\right)' },
           { step: 'Total charge on inner cylinder', latex: 'Q = \\lambda L' },
           { step: 'Capacitance $C = Q/V$', latex: 'C = \\frac{Q}{V} = \\frac{2\\pi\\varepsilon_0 L}{\\ln(b/a)}' }
@@ -183,6 +183,9 @@ export default [
         ]
       }
     ],
+    limits: [
+      { label: 'b → ∞', slider: 'b', target: 4, annotation: 'Outer shell recedes: C → 4πε₀a, the capacitance of an isolated sphere' }
+    ],
     sliders: [
       { id: 'a', label: 'Inner radius a', min: 0.5, max: 2, default: 1, step: 0.1, unit: 'm' },
       { id: 'b', label: 'Outer radius b', min: 2, max: 4, default: 3, step: 0.25, unit: 'm' },
@@ -234,6 +237,9 @@ export default [
           { step: 'New capacitance $C = Q/V$', latex: 'C = \\frac{Q}{V} = \\frac{\\kappa\\varepsilon_0 A}{d} = \\kappa C_0' }
         ]
       }
+    ],
+    limits: [
+      { label: 'κ → 1', slider: 'kappa', target: 1, annotation: 'No dielectric: reduces to vacuum parallel-plate capacitor C = ε₀A/d', ref: 'parallel-plate' }
     ],
     sliders: [
       { id: 'd', label: 'Separation d', min: 1, max: 4, default: 3, step: 0.25, unit: 'm' },

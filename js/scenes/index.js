@@ -8,8 +8,10 @@ import magnetic from './magnetic.js';
 import biotSavart from './biotSavart.js';
 import faraday from './faraday.js';
 import acMaxwell from './acMaxwell.js';
+import sandbox from './sandbox.js';
 
 export const categories = [
+  { id: 'sandbox', title: 'Sandbox', scenes: [sandbox] },
   { id: 'electrostatics', title: "Coulomb's Law & Point Charges", scenes: electrostatics },
   { id: 'distributions', title: 'Continuous Charge Distributions', scenes: distributions },
   { id: 'gauss', title: "Gauss's Law", scenes: gauss },

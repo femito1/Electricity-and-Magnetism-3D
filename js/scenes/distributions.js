@@ -31,6 +31,9 @@ const finiteRodOnAxis = {
         { step: 'Final result', latex: 'E = \\frac{k\\lambda L}{d^2 - (L/2)^2}' }
       ] }
   ],
+  limits: [
+    { label: 'd ≫ L', slider: 'd', target: 4, annotation: 'Far away the rod looks like a point charge: E ≈ kQ/d²' }
+  ],
   sliders: [
     { id: 'L', label: 'Rod length L', min: 1, max: 6, default: 4, step: 0.5, unit: 'm' },
     { id: 'lambda', label: 'λ', min: 0.5, max: 5, default: 1.5, step: 0.25, unit: 'μC/m' },
@@ -71,6 +74,9 @@ const finiteRodPerp = {
         { step: 'Final result', latex: 'E_y = \\frac{k\\lambda L}{h\\sqrt{h^2 + (L/2)^2}}' }
       ] },
     { label: 'Closed form', latex: 'E_y = \\frac{k\\lambda L}{h\\sqrt{h^2+(L/2)^2}}' }
+  ],
+  limits: [
+    { label: 'L → ∞', slider: 'L', target: 6, annotation: 'Becomes the infinite line charge result: E = 2kλ/h', ref: 'infinite-line' }
   ],
   sliders: [
     { id: 'L', label: 'Rod length L', min: 1, max: 6, default: 4, step: 0.5, unit: 'm' },
@@ -118,7 +124,7 @@ const infiniteLine = {
   equations: [
     { label: 'Field', latex: 'E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}',
       derivation: [
-        { step: 'Start from finite rod perpendicular bisector result', latex: 'E = \\frac{k\\lambda L}{h\\sqrt{h^2 + (L/2)^2}}' },
+        { step: 'Start from finite rod perpendicular bisector result (2.2)', latex: 'E = \\frac{k\\lambda L}{h\\sqrt{h^2 + (L/2)^2}}', ref: 'finite-rod-perp' },
         { step: 'Take limit $L \\to \\infty$; for large $L$, $\\sqrt{h^2 + L^2/4} \\approx L/2$', latex: 'E \\approx \\frac{k\\lambda L}{h \\cdot L/2} = \\frac{2k\\lambda}{h}' },
         { step: 'Final result', latex: 'E = \\frac{2k\\lambda}{r} = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}' }
       ] }
@@ -165,6 +171,9 @@ const chargedRing = {
         { step: 'Final result', latex: 'E_y = \\frac{kQy}{(R^2 + y^2)^{3/2}}' }
       ] }
   ],
+  limits: [
+    { label: 'y ≫ R', slider: 'y', target: 5, annotation: 'Far from the ring it behaves like a point charge: E ≈ kQ/y²' }
+  ],
   sliders: [
     { id: 'R', label: 'Ring radius R', min: 0.5, max: 4, default: 2, step: 0.25, unit: 'm' },
     { id: 'Q', label: 'Charge Q', min: 0.5, max: 10, default: 4, step: 0.5, unit: 'μC' },
@@ -196,6 +205,9 @@ const chargedDisk = {
         { step: 'Evaluate with substitution $u = s^2 + y^2$', latex: 'E = \\frac{\\sigma y}{2\\varepsilon_0}\\left[-\\frac{1}{\\sqrt{s^2+y^2}}\\right]_0^R' },
         { step: 'Final result', latex: 'E = \\frac{\\sigma}{2\\varepsilon_0}\\left(1 - \\frac{y}{\\sqrt{R^2 + y^2}}\\right)' }
       ] }
+  ],
+  limits: [
+    { label: 'R → ∞', slider: 'R', target: 4, annotation: 'Becomes the infinite plane result: E = σ/(2ε₀), independent of distance', ref: 'infinite-plane' }
   ],
   sliders: [
     { id: 'R', label: 'Disk radius R', min: 0.5, max: 4, default: 2, step: 0.25, unit: 'm' },
@@ -238,7 +250,7 @@ const infinitePlane = {
   equations: [
     { label: 'Field', latex: 'E = \\frac{\\sigma}{2\\varepsilon_0}',
       derivation: [
-        { step: 'Start from finite disk result', latex: 'E = \\frac{\\sigma}{2\\varepsilon_0}\\left(1 - \\frac{y}{\\sqrt{R^2 + y^2}}\\right)' },
+        { step: 'Start from finite disk result (2.5)', latex: 'E = \\frac{\\sigma}{2\\varepsilon_0}\\left(1 - \\frac{y}{\\sqrt{R^2 + y^2}}\\right)', ref: 'charged-disk' },
         { step: 'Take limit $R \\to \\infty$', latex: '\\lim_{R\\to\\infty} \\frac{y}{\\sqrt{R^2 + y^2}} = 0' },
         { step: 'Result: uniform field independent of distance', latex: 'E = \\frac{\\sigma}{2\\varepsilon_0}' }
       ] }
@@ -276,6 +288,9 @@ const chargedArc = {
         { step: 'Evaluate integral', latex: 'E = \\frac{k\\lambda}{R}\\Big[\\sin\\theta\\Big]_{-\\alpha/2}^{\\alpha/2}' },
         { step: 'Final result', latex: 'E = \\frac{2k\\lambda}{R}\\sin\\!\\left(\\frac{\\alpha}{2}\\right)' }
       ] }
+  ],
+  limits: [
+    { label: 'α → 2π', slider: 'alpha', target: 6.2, annotation: 'Full ring: field at center cancels to zero by symmetry' }
   ],
   sliders: [
     { id: 'alpha', label: 'Arc angle α', min: 0.5, max: 6.2, default: 3.14, step: 0.1, unit: 'rad' },
