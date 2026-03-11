@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E&M 3D Visualizer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="mobile-bar">
+    <button id="btn-sidebar" title="Open menu">&#9776;</button>
+    <button id="btn-panel" title="Open parameters">&#9881;</button>
+  </div>
+  <div id="overlay-backdrop" class="overlay-backdrop"></div>
+  <div id="app">
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <span class="logo">E&amp;M</span>
+        <span class="logo-sub">3D Visualizer</span>
+      </div>
+      <div id="sidebar-search">
+        <input type="text" placeholder="Search problems..." id="search-input">
+      </div>
+      <div id="sidebar-nav"></div>
+    </nav>
+
+    <div id="viewport-container">
+      <div id="viewport"></div>
+      <div id="viewport-controls">
+        <div id="toggle-buttons"></div>
+        <div id="anim-controls" class="hidden">
+          <button id="play-pause-btn" title="Play/Pause">&#9654;</button>
+          <label>Speed:</label>
+          <input type="range" id="speed-range" min="0.1" max="3" step="0.1" value="1">
+          <span id="speed-val">1.0x</span>
+        </div>
+      </div>
+    </div>
+
+    <aside id="info-panel">
+      <div class="panel-section">
+        <h2 id="scene-title">Welcome</h2>
+        <p id="scene-desc">Select a problem from the sidebar to begin exploring electricity and magnetism in 3D.</p>
+      </div>
+      <div id="equations-section" class="panel-section"></div>
+      <div id="params-section" class="panel-section">
+        <h3>Parameters</h3>
+        <div id="sliders"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
