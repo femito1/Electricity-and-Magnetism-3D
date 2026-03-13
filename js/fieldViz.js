@@ -158,14 +158,28 @@ function rk4Step(fieldFn, p, h) {
 }
 
 export function traceFieldLine(fieldFn, start, opts = {}) {
-  const { stepSize = 0.08, maxSteps = 600, bounds = 10, minField = 0.001 } = opts;
+  const {
+    stepSize = 0.08, maxSteps = 600, bounds = 10, minField = 0.001,
+    direction = 1, terminateAt = [], terminateRadius = 0.3, skipIfHitTerminate = false
+  } = opts;
   const pts = [start.clone()];
   let p = start.clone();
+  const dir = direction >= 0 ? 1 : -1;
+  const effFieldFn = dir === 1 ? fieldFn : (pt) => fieldFn(pt).negate();
   for (let i = 0; i < maxSteps; i++) {
-    const E = fieldFn(p);
+    const E = effFieldFn(p);
     if (E.length() < minField) break;
-    p.add(rk4Step(fieldFn, p, stepSize));
+    p.add(rk4Step(effFieldFn, p, stepSize));
     if (p.length() > bounds) { pts.push(p.clone()); break; }
+    let hitTerminate = false;
+    for (const t of terminateAt) {
+      if (p.distanceTo(t) < terminateRadius) { hitTerminate = true; break; }
+    }
+    if (hitTerminate) {
+      pts.push(p.clone());
+      if (skipIfHitTerminate) return [];
+      break;
+    }
     pts.push(p.clone());
   }
   return pts;
@@ -182,6 +196,58 @@ export function createFieldLines(ctx, fieldFn, startPoints, opts = {}) {
     group.add(new THREE.Line(geo, mat));
   }
   return ctx.addMesh(group);
+}
+
+/**
+ * Create field lines for a set of point charges. Correctly traces from both
+ * positive charges (sources) and negative charges (sinks), so lines from
+ * infinity terminating at negative charges are shown.
+ */
+export function createFieldLinesForCharges(ctx, fieldFn, charges, opts = {}) {
+  const {
+    colorPos = 0x44ddff, colorNeg = 0x44ddff, opacity = 0.55,
+    lineCountScale = 3, minLines = 8, maxLines = 20, bounds = 8,
+    seedRadius = 0.3, terminateRadius = 0.32
+  } = opts;
+  const group = new THREE.Group();
+  const posCharges = charges.filter(c => c.q > 0);
+  const negCharges = charges.filter(c => c.q < 0);
+  const allPositions = charges.map(c => c.pos);
+
+  for (const c of posCharges) {
+    const n = Math.max(minLines, Math.min(maxLines, Math.ceil(Math.abs(c.q) * lineCountScale)));
+    const starts = startPointsOnSphere(c.pos, seedRadius, n);
+    const others = allPositions.filter(pos => pos !== c.pos);
+    for (const start of starts) {
+      const pts = traceFieldLine(fieldFn, start, {
+        bounds, terminateAt: others, terminateRadius
+      });
+      if (pts.length >= 2) {
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({ color: colorPos, transparent: true, opacity });
+        group.add(new THREE.Line(geo, mat));
+      }
+    }
+  }
+
+  for (const c of negCharges) {
+    const n = Math.max(minLines, Math.min(maxLines, Math.ceil(Math.abs(c.q) * lineCountScale)));
+    const starts = startPointsOnSphere(c.pos, seedRadius, n);
+    const others = allPositions.filter(pos => pos !== c.pos);
+    for (const start of starts) {
+      const pts = traceFieldLine(fieldFn, start, {
+        bounds, direction: -1, terminateAt: others, terminateRadius,
+        skipIfHitTerminate: true
+      });
+      if (pts.length >= 2) {
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({ color: colorNeg, transparent: true, opacity });
+        group.add(new THREE.Line(geo, mat));
+      }
+    }
+  }
+
+  return group;
 }
 
 export function startPointsOnSphere(center, radius, count) {

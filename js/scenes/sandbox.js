@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { coulombField, startPointsOnSphere } from '../fieldViz.js';
+import { coulombField, createFieldLinesForCharges } from '../fieldViz.js';
 
 const MAX_CHARGES = 20;
 
@@ -155,36 +155,10 @@ export default {
     }
 
     function buildFieldLines(fieldFn) {
-      const group = new THREE.Group();
-      const hasPos = charges.some(c => c.q > 0);
-      for (const c of charges) {
-        const isSource = hasPos ? c.q > 0 : c.q < 0;
-        if (!isSource) continue;
-        const traceSign = hasPos ? 1 : -1;
-        const n = Math.max(8, Math.min(12, Math.ceil(Math.abs(c.q) * 3)));
-        const seeds = startPointsOnSphere(c.pos, 0.3, n);
-        for (const seed of seeds) {
-          const pts = [seed.clone()];
-          let p = seed.clone();
-          for (let i = 0; i < 500; i++) {
-            const E = fieldFn(p);
-            if (E.length() < 0.002) break;
-            p = p.clone().add(E.clone().normalize().multiplyScalar(0.08 * traceSign));
-            if (Math.abs(p.x) > 10 || Math.abs(p.y) > 10 || Math.abs(p.z) > 10) break;
-            let hitSink = false;
-            for (const cc of charges) {
-              if (cc !== c && p.distanceTo(cc.pos) < 0.28) { hitSink = true; break; }
-            }
-            pts.push(p.clone());
-            if (hitSink) break;
-          }
-          if (pts.length >= 3) {
-            const geo = new THREE.BufferGeometry().setFromPoints(pts);
-            const mat = new THREE.LineBasicMaterial({ color: 0x44ddff, transparent: true, opacity: 0.5 });
-            group.add(new THREE.Line(geo, mat));
-          }
-        }
-      }
+      const chargesData = charges.map(c => ({ pos: c.pos, q: c.q }));
+      const group = createFieldLinesForCharges(ctx, fieldFn, chargesData, {
+        bounds: 10, opacity: 0.5, minLines: 8, maxLines: 14
+      });
       vizGroup.add(group);
     }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { coulombField, uniformField, createChargeSphere, createArrowField, createFieldLines, createEquipotentialPlane, startPointsOnSphere, startPointsOnCircle, magnitudeToColor } from '../fieldViz.js';
+import { coulombField, uniformField, createChargeSphere, createArrowField, createFieldLines, createFieldLinesForCharges, createEquipotentialPlane, startPointsOnSphere, startPointsOnCircle, magnitudeToColor } from '../fieldViz.js';
 
 export default [
   // ── 1.1 Point Charge ──────────────────────────────────────────────
@@ -32,12 +32,7 @@ export default [
       ctx.addLabel(origin.clone().add(new THREE.Vector3(0.35, 0.35, 0)), `q=${q > 0 ? '+' : ''}${q}`);
 
       if (ctx.toggles.fieldLines) {
-        const starts = startPointsOnSphere(origin, 0.35, 20);
-        if (q >= 0) {
-          createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff });
-        } else {
-          createFieldLines(ctx, (p) => fieldFn(p).negate(), starts, { color: 0xff6644 });
-        }
+        ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, charges, { minLines: 20, maxLines: 24 }));
       }
 
       if (ctx.toggles.fieldVectors) {
@@ -101,12 +96,10 @@ export default [
       ctx.addLabel(negCharge.clone().add(new THREE.Vector3(0, 0.4, 0)), `q=-${q.toFixed(1)}`);
 
       if (ctx.toggles.fieldLines) {
-        // Dipole field-line geometry is mostly shape-invariant under q scaling.
-        // Increase seed count and opacity with q so magnitude changes are visible.
-        const lineCount = Math.round(10 + q * 2.2);
-        const starts = startPointsOnSphere(posCharge, 0.3, lineCount);
         const opacity = Math.min(0.25 + q * 0.06, 0.8);
-        createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, opacity, bounds: 8 });
+        ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, charges, {
+          lineCountScale: 2.2, minLines: 10, maxLines: 24, opacity, bounds: 8
+        }));
       }
 
       if (ctx.toggles.equipotentials) {
@@ -170,21 +163,7 @@ export default [
       ctx.addLabel(p3.clone().add(new THREE.Vector3(0, 0.4, 0)), `q_3=${q3}`);
 
       if (ctx.toggles.fieldLines) {
-        for (const c of charges) {
-          if (c.q > 0) {
-            const starts = startPointsOnSphere(c.pos, 0.3, Math.max(6, Math.round(Math.abs(c.q) * 3)));
-            createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, bounds: 8 });
-          }
-        }
-        const hasPos = charges.some(c => c.q > 0);
-        if (!hasPos) {
-          for (const c of charges) {
-            if (c.q !== 0) {
-              const starts = startPointsOnSphere(c.pos, 0.3, 6);
-              createFieldLines(ctx, (p) => fieldFn(p).negate(), starts, { color: 0xff6644, bounds: 8 });
-            }
-          }
-        }
+        ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, charges, { bounds: 8 }));
       }
 
       const testPt = new THREE.Vector3(0, 2, 0);

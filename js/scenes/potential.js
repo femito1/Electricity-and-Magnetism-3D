@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {
   coulombField, createChargeSphere, createArrowField, createFieldLines,
-  createRod, createRing, createDisk, createSphere, startPointsOnSphere,
-  createEquipotentialPlane, magnitudeToColor
+  createFieldLinesForCharges, createRod, createRing, createDisk, createSphere,
+  startPointsOnSphere, createEquipotentialPlane, magnitudeToColor
 } from '../fieldViz.js';
 
 // ── 4.1 Point-Charge Potential ──────────────────────────────────────────────
@@ -49,8 +49,7 @@ const pointChargePotential = {
 
     if (toggles.fieldLines) {
       const fieldFn = coulombField([{ pos: origin, q }]);
-      const starts = startPointsOnSphere(origin, 0.4, 16);
-      createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, opacity: 0.5 });
+      ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, [{ pos: origin, q }], { minLines: 16 }));
     }
 
     return {};
@@ -107,8 +106,7 @@ const dipolePotential = {
     if (toggles.fieldLines) {
       const charges = [{ pos: posP, q }, { pos: negP, q: -q }];
       const fieldFn = coulombField(charges);
-      const starts = startPointsOnSphere(posP, 0.35, 14);
-      createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, opacity: 0.45, bounds: 7 });
+      ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, charges, { opacity: 0.45, bounds: 7 }));
     }
 
     return {};
@@ -413,20 +411,7 @@ const equipotentialSurfaces = {
     if (toggles.fieldLines) {
       const charges = [{ pos: p1, q: q1 }, { pos: p2, q: q2 }];
       const fieldFn = coulombField(charges);
-      const starts = [];
-      if (q1 > 0) {
-        starts.push(...startPointsOnSphere(p1, 0.35, 12));
-      }
-      if (q2 > 0) {
-        starts.push(...startPointsOnSphere(p2, 0.35, 12));
-      }
-      if (q1 <= 0 && q2 <= 0) {
-        for (let i = 0; i < 10; i++) {
-          const a = (i / 10) * Math.PI * 2;
-          starts.push(new THREE.Vector3(6 * Math.cos(a), 0, 6 * Math.sin(a)));
-        }
-      }
-      createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, opacity: 0.4, bounds: 8 });
+      ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, charges, { opacity: 0.4, bounds: 8 }));
     }
 
     return {};
@@ -492,8 +477,9 @@ const conductingSpherePotential = {
 
     if (toggles.fieldLines) {
       const fieldFn = coulombField([{ pos: origin, q: Q }]);
-      const starts = startPointsOnSphere(origin, R + 0.05, 16);
-      createFieldLines(ctx, fieldFn, starts, { color: 0x44ddff, opacity: 0.45, bounds: 7 });
+      ctx.addMesh(createFieldLinesForCharges(ctx, fieldFn, [{ pos: origin, q: Q }], {
+        seedRadius: R + 0.05, opacity: 0.45, bounds: 7
+      }));
     }
 
     ctx.addLabel(new THREE.Vector3(0, 0.3, 0), 'V = const');
