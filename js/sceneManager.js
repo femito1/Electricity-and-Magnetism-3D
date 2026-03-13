@@ -60,8 +60,19 @@ export default class SceneManager {
     this._animate = this._animate.bind(this);
     this._animate();
     this._onResize = this._onResize.bind(this);
+    this._resizeObserver = new ResizeObserver(() => this._onResize());
     window.addEventListener('resize', this._onResize);
-    new ResizeObserver(() => this._onResize()).observe(container);
+    this._resizeObserver.observe(container);
+  }
+
+  destroy() {
+    window.removeEventListener('resize', this._onResize);
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
+    this.clearSceneObjects();
+    this.currentScene = null;
+    this.currentState = null;
+    this.currentCtx = null;
   }
 
   _animate() {

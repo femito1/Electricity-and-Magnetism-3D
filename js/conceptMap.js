@@ -234,28 +234,25 @@ export function renderConceptMap(container, onNavigate) {
     return { x: vb[0], y: vb[1], w: vb[2], h: vb[3] };
   }
 
-  svg.addEventListener('mousedown', (e) => {
+  const onMousedown = (e) => {
     if (e.target.closest('g')) return;
     isPanning = true;
     svg.style.cursor = 'grabbing';
     startX = e.clientX;
     startY = e.clientY;
     viewBox = getViewBox();
-  });
-
-  window.addEventListener('mousemove', (e) => {
+  };
+  const onMousemove = (e) => {
     if (!isPanning) return;
     const dx = (e.clientX - startX) * (viewBox.w / container.clientWidth);
     const dy = (e.clientY - startY) * (viewBox.h / container.clientHeight);
     svg.setAttribute('viewBox', `${viewBox.x - dx} ${viewBox.y - dy} ${viewBox.w} ${viewBox.h}`);
-  });
-
-  window.addEventListener('mouseup', () => {
+  };
+  const onMouseup = () => {
     isPanning = false;
     svg.style.cursor = 'grab';
-  });
-
-  svg.addEventListener('wheel', (e) => {
+  };
+  const onWheel = (e) => {
     e.preventDefault();
     const vb = getViewBox();
     const scale = e.deltaY > 0 ? 1.1 : 0.9;
@@ -264,7 +261,19 @@ export function renderConceptMap(container, onNavigate) {
     const cx = vb.x + vb.w / 2;
     const cy = vb.y + vb.h / 2;
     svg.setAttribute('viewBox', `${cx - newW / 2} ${cy - newH / 2} ${newW} ${newH}`);
-  }, { passive: false });
+  };
+
+  svg.addEventListener('mousedown', onMousedown);
+  window.addEventListener('mousemove', onMousemove);
+  window.addEventListener('mouseup', onMouseup);
+  svg.addEventListener('wheel', onWheel, { passive: false });
 
   container.appendChild(svg);
+
+  return function cleanup() {
+    svg.removeEventListener('mousedown', onMousedown);
+    window.removeEventListener('mousemove', onMousemove);
+    window.removeEventListener('mouseup', onMouseup);
+    svg.removeEventListener('wheel', onWheel);
+  };
 }

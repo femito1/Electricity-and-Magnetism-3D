@@ -45,6 +45,9 @@ export default {
     const mouse = new THREE.Vector2();
     let mouseDownPos = null;
     const DRAG_THRESHOLD = 5;
+    let nextChargeQ = 1;
+    let onSelect = null;
+    let onDeselect = null;
 
     function chargeColor(q) { return q > 0 ? 0xff5566 : 0x5588ff; }
 
@@ -54,11 +57,11 @@ export default {
         charges[i].mesh.scale.setScalar(i === idx ? 1.3 : 1.0);
         charges[i].mesh.material.emissiveIntensity = i === idx ? 0.8 : 0.3;
       }
-      if (idx >= 0 && typeof ctx._onSelect === 'function') {
-        ctx._onSelect(idx, charges[idx]);
+      if (idx >= 0 && typeof onSelect === 'function') {
+        onSelect(idx, charges[idx]);
       }
-      if (idx < 0 && typeof ctx._onDeselect === 'function') {
-        ctx._onDeselect();
+      if (idx < 0 && typeof onDeselect === 'function') {
+        onDeselect();
       }
     }
 
@@ -226,7 +229,7 @@ export default {
         } else {
           const pt = groundHits[0].point;
           pt.y = 0;
-          addCharge(pt, ctx._nextChargeQ || 1);
+          addCharge(pt, nextChargeQ);
         }
       }
     }
@@ -265,7 +268,10 @@ export default {
       selectCharge,
       clearAll() {
         while (charges.length) removeCharge(charges.length - 1);
-      }
+      },
+      setNextChargeQ(q) { nextChargeQ = q; },
+      setOnSelect(fn) { onSelect = fn; },
+      setOnDeselect(fn) { onDeselect = fn; }
     };
   }
 };

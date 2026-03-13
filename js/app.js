@@ -85,7 +85,13 @@ class App {
     const toggles = this.createToggles(this._toggleDefs);
     this.renderLimits(def.limits || [], params);
     const ac = document.getElementById('anim-controls');
-    if (def.animate) ac.classList.remove('hidden'); else ac.classList.add('hidden');
+    const pb = document.getElementById('play-pause-btn');
+    if (def.animate) {
+      ac.classList.remove('hidden');
+      if (pb) pb.textContent = this.sceneManager.isPlaying ? '\u23F8' : '\u25B6';
+    } else {
+      ac.classList.add('hidden');
+    }
     this.sceneManager.loadScene(def, params, toggles);
   }
 
@@ -121,7 +127,7 @@ class App {
     let editing = false;
 
     const updateNextQ = () => {
-      this.sceneManager.currentCtx._nextChargeQ = currentSign * currentMag;
+      if (this._sandboxState) this._sandboxState.setNextChargeQ(currentSign * currentMag);
     };
 
     const syncControls = () => {
@@ -234,15 +240,9 @@ class App {
     });
     sliderC.appendChild(clearBtn);
 
+    this._sandboxState.setOnSelect((idx, charge) => enterEditMode(charge));
+    this._sandboxState.setOnDeselect(() => exitEditMode());
     updateNextQ();
-
-    this.sceneManager.currentCtx._onSelect = (idx, charge) => {
-      enterEditMode(charge);
-    };
-
-    this.sceneManager.currentCtx._onDeselect = () => {
-      exitEditMode();
-    };
   }
 
   _renderMixedText(text, container) {
@@ -583,7 +583,7 @@ class App {
     btnOpen.addEventListener('click', () => {
       overlay.classList.add('visible');
       if (!rendered) {
-        renderConceptMap(container, (sceneId) => {
+        this._conceptMapCleanup = renderConceptMap(container, (sceneId) => {
           overlay.classList.remove('visible');
           this.loadScene(sceneId);
         });

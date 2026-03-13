@@ -18,7 +18,7 @@ Then open **http://localhost:8080** in your browser.
 
 ## What's Included
 
-**60 interactive 3D scenes** across 10 categories:
+**69 interactive 3D scenes** across 10 categories:
 
 | # | Category | Scenes | Topics |
 |---|----------|--------|--------|
@@ -41,7 +41,7 @@ Then open **http://localhost:8080** in your browser.
 - **Toggle controls** for field lines, field vectors, Gaussian surfaces, etc.
 - **Animated scenes** with play/pause and speed control (circuits, Faraday, AC, EM waves)
 - **Equation panel** showing relevant formulas for each problem
-- **Search** across all 60 problems
+- **Search** across all 69 problems
 
 ## Tech Stack
 
