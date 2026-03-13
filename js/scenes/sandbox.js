@@ -123,28 +123,32 @@ export default {
 
     function buildArrows(fieldFn) {
       const step = charges.length > 8 ? 2.5 : 1.8;
+      const stepY = step * 1.2;
       const group = new THREE.Group();
-      for (let x = -6; x <= 6; x += step) {
-        for (let z = -6; z <= 6; z += step) {
-          const p = new THREE.Vector3(x, 0, z);
-          let skip = false;
-          for (const c of charges) {
-            if (p.distanceTo(c.pos) < 0.45) { skip = true; break; }
+      const headLen = 0.15, headWid = 0.08;
+      for (let y = -4; y <= 4; y += stepY) {
+        for (let x = -6; x <= 6; x += step) {
+          for (let z = -6; z <= 6; z += step) {
+            const p = new THREE.Vector3(x, y, z);
+            let skip = false;
+            for (const c of charges) {
+              if (p.distanceTo(c.pos) < 0.5) { skip = true; break; }
+            }
+            if (skip) continue;
+            const E = fieldFn(p);
+            const mag = E.length();
+            if (mag < 0.01) continue;
+            const dir = E.clone().normalize();
+            const len = Math.min(Math.sqrt(mag) * 0.7, 1.4);
+            const t = Math.min(mag / 6, 1);
+            const col = new THREE.Color().setHSL(0.55 - t * 0.5, 0.9, 0.35 + t * 0.3);
+            const arrow = new THREE.ArrowHelper(dir, p, len, col.getHex(), headLen, headWid);
+            arrow.line.material.transparent = true;
+            arrow.line.material.opacity = 0.75;
+            arrow.cone.material.transparent = true;
+            arrow.cone.material.opacity = 0.75;
+            group.add(arrow);
           }
-          if (skip) continue;
-          const E = fieldFn(p);
-          const mag = E.length();
-          if (mag < 0.01) continue;
-          const dir = E.clone().normalize();
-          const len = Math.min(mag * 0.3, 1.4);
-          const t = Math.min(mag / 6, 1);
-          const col = new THREE.Color().setHSL(0.55 - t * 0.5, 0.9, 0.35 + t * 0.3);
-          const arrow = new THREE.ArrowHelper(dir, p, len, col.getHex(), len * 0.28, len * 0.14);
-          arrow.line.material.transparent = true;
-          arrow.line.material.opacity = 0.75;
-          arrow.cone.material.transparent = true;
-          arrow.cone.material.opacity = 0.75;
-          group.add(arrow);
         }
       }
       vizGroup.add(group);

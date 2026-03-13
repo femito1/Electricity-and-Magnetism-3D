@@ -381,8 +381,8 @@ const solidSphere = {
     createSphere(ctx, { radius: R, color: 0xff5566, opacity: 0.12 });
     if (ctx.toggles.fieldVectors) {
       createArrowField(ctx, fieldFn, {
-        bounds: [[-R - 2, R + 2], [0, 0], [-R - 2, R + 2]],
-        step: 1.2, scale: 0.15, maxLength: 1.5, maxMag: 8, opacity: 0.85, flat: true
+        bounds: [[-R - 2, R + 2], [-R - 1, R + 1], [-R - 2, R + 2]],
+        step: 1.2, stepY: 1.4, scale: 0.15, maxLength: 1.5, maxMag: 8, opacity: 0.85, flat: false
       });
     }
     if (ctx.toggles.showInside) {
@@ -393,7 +393,7 @@ const solidSphere = {
           const E = fieldFn(p);
           if (E.length() < 0.005) continue;
           const len = Math.min(E.length() * 0.6, 0.8);
-          g.add(new THREE.ArrowHelper(E.clone().normalize(), p, len, 0xff8844, len * 0.3, len * 0.15));
+          g.add(new THREE.ArrowHelper(E.clone().normalize(), p, len, 0xff8844, 0.12, 0.06));
         }
       }
       ctx.addMesh(g);

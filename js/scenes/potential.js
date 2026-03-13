@@ -362,8 +362,9 @@ const gradientField = {
 
     const fieldFn = coulombField([{ pos: origin, q }]);
     createArrowField(ctx, fieldFn, {
-      bounds: [[-4, 4], [0, 0], [-4, 4]], step: 1.2, scale: 0.25, maxLength: 1.0,
-      maxMag: 6, opacity: 0.85, flat: true
+      bounds: [[-4, 4], [-2, 2], [-4, 4]], step: 1.3, stepY: 1.5, scale: 0.8, maxLength: 1.0,
+      maxMag: 6, opacity: 0.85, flat: false, lengthScale: 'sqrt',
+      excludePositions: [origin], excludeRadius: 0.55
     });
 
     ctx.addLabel(new THREE.Vector3(3, 0.5, 0), '\\vec{E} = -\\nabla V');

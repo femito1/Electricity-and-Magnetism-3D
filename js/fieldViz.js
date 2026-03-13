@@ -99,23 +99,41 @@ export function magnitudeToColor(mag, maxMag = 5) {
 export function createArrowField(ctx, fieldFn, opts = {}) {
   const {
     bounds = [[-3, 3], [-3, 3], [-3, 3]],
-    step = 1.5, scale = 0.3, maxLength = 1.2,
-    maxMag = 5, opacity = 0.8, flat = false
+    step = 1.5, stepY, scale = 0.3, maxLength = 1.2,
+    maxMag = 5, opacity = 0.8, flat = false,
+    uniformLength = false, headLength = 0.15, headWidth = 0.08,
+    excludePositions = [], excludeRadius = 0.5,
+    lengthScale = 'linear'
   } = opts;
   const group = new THREE.Group();
   const [xr, yr, zr] = bounds;
   const ys = flat ? 0 : yr[0], ye = flat ? 0.01 : yr[1];
+  const yStep = stepY ?? (flat ? step : step * 1.2);
   for (let x = xr[0]; x <= xr[1]; x += step) {
-    for (let y = ys; y <= ye; y += step) {
+    for (let y = ys; y <= ye; y += yStep) {
       for (let z = zr[0]; z <= zr[1]; z += step) {
         const pos = new THREE.Vector3(x, y, z);
+        if (excludePositions.length) {
+          let skip = false;
+          for (const ex of excludePositions) {
+            if (pos.distanceTo(ex) < excludeRadius) { skip = true; break; }
+          }
+          if (skip) continue;
+        }
         const E = fieldFn(pos);
         const mag = E.length();
         if (mag < 0.005) continue;
         const dir = E.clone().normalize();
-        const len = Math.min(mag * scale, maxLength);
+        let len;
+        if (uniformLength) {
+          len = maxLength;
+        } else if (lengthScale === 'sqrt') {
+          len = Math.min(Math.sqrt(mag) * scale, maxLength);
+        } else {
+          len = Math.min(mag * scale, maxLength);
+        }
         const col = magnitudeToColor(mag, maxMag);
-        const arrow = new THREE.ArrowHelper(dir, pos, len, col.getHex(), len * 0.3, len * 0.15);
+        const arrow = new THREE.ArrowHelper(dir, pos, len, col.getHex(), headLength, headWidth);
         arrow.line.material.transparent = true;
         arrow.line.material.opacity = opacity;
         arrow.cone.material.transparent = true;

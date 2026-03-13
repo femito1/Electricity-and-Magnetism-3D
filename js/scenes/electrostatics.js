@@ -41,13 +41,19 @@ export default [
       }
 
       if (ctx.toggles.fieldVectors) {
-        createArrowField(ctx, fieldFn, { flat: true, step: 1.2, bounds: [[-4, 4], [-4, 4], [-4, 4]], maxMag: 8 });
+        createArrowField(ctx, fieldFn, {
+          flat: false, step: 1.4, stepY: 1.6,
+          bounds: [[-4, 4], [-2.5, 2.5], [-4, 4]], maxMag: 8, maxLength: 1.2,
+          scale: 0.9, lengthScale: 'sqrt',
+          excludePositions: [origin], excludeRadius: 0.55
+        });
       }
 
       const testPt = new THREE.Vector3(2, 0, 0);
       const Eatp = fieldFn(testPt);
       const Emag = Eatp.length();
-      const arrow = new THREE.ArrowHelper(Eatp.clone().normalize(), testPt, Math.min(Emag * 0.4, 1.5), 0xffaa22, 0.2, 0.1);
+      const testArrowLen = Math.min(Math.sqrt(Emag) * 0.9, 1.2);
+      const arrow = new THREE.ArrowHelper(Eatp.clone().normalize(), testPt, testArrowLen, 0xffaa22, 0.15, 0.08);
       ctx.addMesh(arrow);
       ctx.addLabel(testPt.clone().add(new THREE.Vector3(0.2, 0.4, 0)), '\\vec{E}');
 
