@@ -1,6 +1,72 @@
 import SceneManager from './sceneManager.js';
 import { categories, findScene } from './scenes/index.js';
 import { renderConceptMap } from './conceptMap.js';
+import * as i18n from './i18n/index.js';
+import enStrings from './i18n/en.js';
+import ptStrings from './i18n/pt.js';
+
+function registerSceneStrings() {
+  const en = {};
+  for (const cat of categories) {
+    for (const s of cat.scenes) {
+      en[`scene.${s.id}.title`] = s.title;
+      en[`scene.${s.id}.description`] = s.description;
+      (s.equations || []).forEach((eq, i) => {
+        en[`scene.${s.id}.eq.${i}`] = eq.label;
+        (eq.derivation || []).forEach((d, j) => {
+          en[`scene.${s.id}.eq.${i}.deriv.${j}`] = d.step;
+        });
+      });
+      (s.sliders || []).forEach(sl => { en[`scene.${s.id}.slider.${sl.id}`] = sl.label; });
+      (s.toggles || []).forEach(tg => { en[`scene.${s.id}.toggle.${tg.id}`] = tg.label; });
+      (s.limits || []).forEach((lim, i) => {
+        en[`scene.${s.id}.limit.${i}.label`] = lim.label;
+        en[`scene.${s.id}.limit.${i}.annotation`] = lim.annotation || '';
+      });
+    }
+  }
+  i18n.registerStrings('en', en);
+}
+
+function getTranslatedScene(def) {
+  const t = i18n.t;
+  const out = { ...def };
+  out.title = t(`scene.${def.id}.title`) || def.title;
+  out.description = t(`scene.${def.id}.description`) || def.description;
+  if (def.equations) {
+    out.equations = def.equations.map((eq, i) => {
+      const eqOut = { ...eq };
+      eqOut.label = t(`scene.${def.id}.eq.${i}`) || eq.label;
+      if (eq.derivation) {
+        eqOut.derivation = eq.derivation.map((d, j) => ({
+          ...d,
+          step: t(`scene.${def.id}.eq.${i}.deriv.${j}`) || d.step
+        }));
+      }
+      return eqOut;
+    });
+  }
+  if (def.sliders) {
+    out.sliders = def.sliders.map(sl => ({
+      ...sl,
+      label: t(`scene.${def.id}.slider.${sl.id}`) || sl.label
+    }));
+  }
+  if (def.toggles) {
+    out.toggles = def.toggles.map(tg => ({
+      ...tg,
+      label: t(`scene.${def.id}.toggle.${tg.id}`) || tg.label
+    }));
+  }
+  if (def.limits) {
+    out.limits = def.limits.map((lim, i) => ({
+      ...lim,
+      label: t(`scene.${def.id}.limit.${i}.label`) || lim.label,
+      annotation: t(`scene.${def.id}.limit.${i}.annotation`) || lim.annotation || ''
+    }));
+  }
+  return out;
+}
 
 class App {
   constructor() {
@@ -8,6 +74,15 @@ class App {
     this.sceneManager = null;
     this._sliderDefs = [];
     this._toggleDefs = [];
+    this._currentSceneId = null;
+
+    i18n.registerStrings('en', enStrings);
+    i18n.registerStrings('pt', ptStrings);
+    registerSceneStrings();
+    i18n.initLocale();
+    this.setupLanguageSwitcher();
+    this.applyLocaleToDOM();
+
     this.buildSidebar();
     this.setupControls();
     this.setupSearch();
@@ -16,6 +91,60 @@ class App {
     this.setupConceptMap();
     this.initSceneManager();
     this.loadInitialScene();
+
+    i18n.onLocaleChange(() => this.onLocaleChange());
+  }
+
+  setupLanguageSwitcher() {
+    const container = document.getElementById('lang-switcher');
+    if (!container) return;
+    container.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.lang;
+        if (lang === 'en' || lang === 'pt') {
+          i18n.setLocale(lang);
+        }
+      });
+    });
+  }
+
+  applyLocaleToDOM() {
+    const t = i18n.t;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) el.textContent = t(key);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) el.placeholder = t(key);
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      if (key) el.title = t(key);
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === i18n.getLocale());
+    });
+  }
+
+  onLocaleChange() {
+    this.applyLocaleToDOM();
+    this.buildSidebar();
+    if (this._currentSceneId) {
+      this.loadScene(this._currentSceneId);
+    } else {
+      document.getElementById('scene-title').textContent = i18n.t('ui.welcomeTitle');
+      document.getElementById('scene-desc').textContent = i18n.t('ui.welcomeDesc');
+    }
+    const cmOverlay = document.getElementById('concept-map-overlay');
+    const cmContainer = document.getElementById('concept-map-container');
+    if (cmOverlay?.classList.contains('visible') && cmContainer) {
+      if (this._conceptMapCleanup) this._conceptMapCleanup();
+      this._conceptMapCleanup = renderConceptMap(cmContainer, (sceneId) => {
+        cmOverlay.classList.remove('visible');
+        this.loadScene(sceneId);
+      });
+    }
   }
 
   initSceneManager() {
@@ -34,12 +163,15 @@ class App {
 
   buildSidebar() {
     const nav = document.getElementById('sidebar-nav');
+    nav.innerHTML = '';
+    const t = i18n.t;
     for (const cat of categories) {
       const catEl = document.createElement('div');
       catEl.className = 'nav-category';
       const titleEl = document.createElement('div');
       titleEl.className = 'nav-category-title';
-      titleEl.innerHTML = `<span class="arrow">&#9660;</span>${cat.title}`;
+      const catTitle = t(`cat.${cat.id}`) || cat.title;
+      titleEl.innerHTML = `<span class="arrow">&#9660;</span>${catTitle}`;
       titleEl.addEventListener('click', () => catEl.classList.toggle('collapsed'));
       catEl.appendChild(titleEl);
       const items = document.createElement('div');
@@ -47,7 +179,7 @@ class App {
       for (const s of cat.scenes) {
         const item = document.createElement('div');
         item.className = 'nav-item';
-        item.textContent = s.title;
+        item.textContent = t(`scene.${s.id}.title`) || s.title;
         item.dataset.sceneId = s.id;
         item.addEventListener('click', () => {
           this.loadScene(s.id);
@@ -66,15 +198,17 @@ class App {
     const result = findScene(sceneId);
     if (!result) return;
     const { scene: def } = result;
+    this._currentSceneId = sceneId;
+    const tr = getTranslatedScene(def);
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.sceneId === sceneId);
     });
-    document.getElementById('scene-title').textContent = def.title;
-    document.getElementById('scene-desc').textContent = def.description;
-    this.renderEquations(def.equations || []);
-    this._sliderDefs = def.sliders || [];
-    this._toggleDefs = def.toggles || [];
-    this._currentSceneDef = def;
+    document.getElementById('scene-title').textContent = tr.title;
+    document.getElementById('scene-desc').textContent = tr.description;
+    this.renderEquations(tr.equations || []);
+    this._sliderDefs = tr.sliders || [];
+    this._toggleDefs = tr.toggles || [];
+    this._currentSceneDef = tr;
 
     if (def.isSandbox) {
       this._loadSandbox(def);
@@ -83,7 +217,7 @@ class App {
 
     const params = this.createSliders(this._sliderDefs);
     const toggles = this.createToggles(this._toggleDefs);
-    this.renderLimits(def.limits || [], params);
+    this.renderLimits(tr.limits || [], params);
     const ac = document.getElementById('anim-controls');
     const pb = document.getElementById('play-pause-btn');
     if (def.animate) {
@@ -92,7 +226,7 @@ class App {
     } else {
       ac.classList.add('hidden');
     }
-    this.sceneManager.loadScene(def, params, toggles);
+    this.sceneManager.loadScene(tr, params, toggles);
   }
 
   _loadSandbox(def) {
@@ -103,7 +237,8 @@ class App {
     const sandboxToggles = { showArrows: true, showLines: false, showEquipotential: false };
     const toggleContainer = document.getElementById('toggle-buttons');
     toggleContainer.innerHTML = '';
-    for (const [key, label] of [['showArrows', 'E Vectors'], ['showLines', 'Field Lines'], ['showEquipotential', 'Equipotential']]) {
+    const t = i18n.t;
+    for (const [key, label] of [['showArrows', t('sandbox.eVectors')], ['showLines', t('sandbox.fieldLines')], ['showEquipotential', t('sandbox.equipotential')]]) {
       const btn = document.createElement('button');
       btn.className = 'toggle-btn' + (sandboxToggles[key] ? ' active' : '');
       btn.textContent = label;
@@ -142,9 +277,7 @@ class App {
     };
 
     const setModeLabel = () => {
-      modeLabel.textContent = editing
-        ? 'Editing selected charge (click ground or Esc to deselect)'
-        : 'Next charge to place — click the grid';
+      modeLabel.textContent = editing ? t('sandbox.modeEdit') : t('sandbox.modePlace');
       modeLabel.className = 'sandbox-mode-label' + (editing ? ' sandbox-mode-editing' : '');
     };
 
@@ -169,14 +302,14 @@ class App {
 
     const modeLabel = document.createElement('div');
     modeLabel.className = 'sandbox-mode-label';
-    modeLabel.textContent = 'Next charge to place — click the grid';
+    modeLabel.textContent = t('sandbox.modePlace');
     sliderC.appendChild(modeLabel);
 
     const chargeSignRow = document.createElement('div');
     chargeSignRow.className = 'sandbox-control-row';
     const signLabel = document.createElement('span');
     signLabel.className = 'sandbox-label';
-    signLabel.textContent = 'Charge sign:';
+    signLabel.textContent = t('sandbox.chargeSign');
     chargeSignRow.appendChild(signLabel);
 
     const btnPos = document.createElement('button');
@@ -205,7 +338,7 @@ class App {
     const magLabelRow = document.createElement('div');
     magLabelRow.className = 'slider-label';
     const magName = document.createElement('span');
-    magName.textContent = 'Charge |q|';
+    magName.textContent = t('sandbox.chargeMag');
     const magVal = document.createElement('span');
     magVal.className = 'slider-value';
     magVal.textContent = '1.0';
@@ -223,7 +356,7 @@ class App {
 
     const delBtn = document.createElement('button');
     delBtn.className = 'sandbox-delete-btn hidden';
-    delBtn.textContent = 'Delete selected charge';
+    delBtn.textContent = t('sandbox.deleteCharge');
     delBtn.addEventListener('click', () => {
       const state = this._sandboxState;
       if (state && state.getSelected() >= 0) {
@@ -234,7 +367,7 @@ class App {
 
     const clearBtn = document.createElement('button');
     clearBtn.className = 'sandbox-clear-btn';
-    clearBtn.textContent = 'Clear all charges';
+    clearBtn.textContent = t('sandbox.clearAll');
     clearBtn.addEventListener('click', () => {
       if (this._sandboxState) this._sandboxState.clearAll();
     });
@@ -263,7 +396,7 @@ class App {
     c.innerHTML = '';
     if (!equations.length) return;
     const h = document.createElement('h3');
-    h.textContent = 'Equations';
+    h.textContent = i18n.t('ui.equations');
     c.appendChild(h);
     for (const eq of equations) {
       const card = document.createElement('div');
@@ -282,7 +415,7 @@ class App {
         derivContainer.className = 'derivation-container';
         const btn = document.createElement('button');
         btn.className = 'derivation-toggle';
-        btn.innerHTML = '<span class="toggle-arrow">&#9654;</span> Derive';
+        btn.innerHTML = '<span class="toggle-arrow">&#9654;</span> ' + i18n.t('ui.derive');
         btn.addEventListener('click', () => {
           btn.classList.toggle('active');
           derivContainer.classList.toggle('open');
@@ -335,7 +468,7 @@ class App {
     if (!limits.length) return;
     const h = document.createElement('h3');
     h.className = 'limits-heading';
-    h.textContent = 'Limiting Cases';
+    h.textContent = i18n.t('ui.limitingCases');
     sec.appendChild(h);
     const row = document.createElement('div');
     row.className = 'limits-row';
@@ -396,7 +529,7 @@ class App {
       banner.textContent = lim.annotation + '  ';
       const link = document.createElement('span');
       link.className = 'limit-ref-link';
-      link.textContent = '→ Go to scene';
+      link.textContent = i18n.t('ui.goToScene');
       link.addEventListener('click', () => this.loadScene(lim.ref));
       banner.appendChild(link);
     }
@@ -493,7 +626,7 @@ class App {
       cb.checked = true;
       cb.dataset.catIdx = String(categories.indexOf(cat));
       cb.addEventListener('change', () => this._generateSheet(checkboxes, derivToggle.checked, content));
-      lbl.append(cb, document.createTextNode(' ' + cat.title));
+      lbl.append(cb, document.createTextNode(' ' + (i18n.t(`cat.${cat.id}`) || cat.title)));
       chapContainer.appendChild(lbl);
       checkboxes.push(cb);
     }
@@ -524,7 +657,7 @@ class App {
       chapter.className = 'sheet-chapter';
       const chTitle = document.createElement('div');
       chTitle.className = 'sheet-chapter-title';
-      chTitle.textContent = cat.title;
+      chTitle.textContent = i18n.t(`cat.${cat.id}`) || cat.title;
       chapter.appendChild(chTitle);
 
       for (const scene of cat.scenes) {
@@ -533,7 +666,7 @@ class App {
         scDiv.className = 'sheet-scene';
         const scTitle = document.createElement('div');
         scTitle.className = 'sheet-scene-title';
-        scTitle.textContent = scene.title;
+        scTitle.textContent = i18n.t(`scene.${scene.id}.title`) || scene.title;
         scDiv.appendChild(scTitle);
 
         for (const eq of scene.equations) {

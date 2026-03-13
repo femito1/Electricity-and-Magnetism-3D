@@ -1,4 +1,37 @@
 import { categories } from './scenes/index.js';
+import * as i18n from './i18n/index.js';
+
+const EDGE_LABEL_KEYS = {
+  'generalize': 'cm.generalize',
+  'L → ∞': 'cm.LtoInf',
+  'R → ∞': 'cm.RtoInf',
+  'α → 2π': 'cm.alphaTo2pi',
+  'Gauss method': 'cm.gaussMethod',
+  'integrate E': 'cm.integrateE',
+  'V from dipole': 'cm.VfromDipole',
+  'V on axis': 'cm.VonAxis',
+  'uniform E': 'cm.uniformE',
+  'add κ': 'cm.addKappa',
+  'stored energy': 'cm.storedEnergy',
+  'RC circuit': 'cm.rcCircuit',
+  'extend': 'cm.extend',
+  'Kirchhoff rules': 'cm.kirchhoffRules',
+  'Lorentz force': 'cm.LorentzForce',
+  'force on loop': 'cm.forceOnLoop',
+  'Hall effect': 'cm.hallEffect',
+  'finite version': 'cm.finiteVersion',
+  'loop geometry': 'cm.loopGeometry',
+  'Ampère method': 'cm.ampereMethod',
+  'flux of B': 'cm.fluxOfB',
+  "Faraday's law": 'cm.faradayLaw',
+  'motional emf': 'cm.motionalEmf',
+  'rotating loop': 'cm.rotatingLoop',
+  'inductor': 'cm.inductor',
+  'AC version': 'cm.acVersion',
+  'combine': 'cm.combine',
+  "Maxwell's addition": 'cm.maxwellAddition',
+  'energy flow': 'cm.energyFlow',
+};
 
 const CATEGORY_COLORS = {
   electrostatics: '#ff5566',
@@ -79,9 +112,10 @@ const EDGES = [
 
 function buildSceneLookup() {
   const map = {};
+  const t = i18n.t;
   for (const cat of categories) {
     for (const s of cat.scenes) {
-      map[s.id] = { title: s.title, catId: cat.id };
+      map[s.id] = { title: t(`scene.${s.id}.title`) || s.title, catId: cat.id };
     }
   }
   return map;
@@ -134,10 +168,12 @@ export function renderConceptMap(container, onNavigate) {
   </marker>`;
   svg.appendChild(defs);
 
+  const t = i18n.t;
   // Category column headers
   for (let ci = 0; ci < categories.length; ci++) {
     const cat = categories[ci];
     const x = 80 + ci * 160;
+    const catTitle = t(`cat.${cat.id}`) || cat.title;
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', x);
     text.setAttribute('y', 28);
@@ -145,7 +181,7 @@ export function renderConceptMap(container, onNavigate) {
     text.setAttribute('fill', CATEGORY_COLORS[cat.id] || '#888');
     text.setAttribute('font-size', '11');
     text.setAttribute('font-weight', '700');
-    text.textContent = cat.title.length > 18 ? cat.title.slice(0, 16) + '…' : cat.title;
+    text.textContent = catTitle.length > 18 ? catTitle.slice(0, 16) + '…' : catTitle;
     svg.appendChild(text);
   }
 
@@ -174,7 +210,8 @@ export function renderConceptMap(container, onNavigate) {
       edgeLabel.setAttribute('text-anchor', 'middle');
       edgeLabel.setAttribute('fill', '#555');
       edgeLabel.setAttribute('font-size', '8');
-      edgeLabel.textContent = label;
+      const key = EDGE_LABEL_KEYS[label];
+      edgeLabel.textContent = key ? t(key) : label;
       svg.appendChild(edgeLabel);
     }
   }

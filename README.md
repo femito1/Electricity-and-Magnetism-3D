@@ -33,6 +33,10 @@ Then open **http://localhost:8080** in your browser.
 | 9 | Faraday's Law & Induction | 7 | Magnetic flux, changing B, motional EMF, generators, eddy currents, LR circuits |
 | 10 | AC Circuits & Maxwell's Equations | 7 | AC R/L/C, RLC resonance, displacement current, EM waves, Poynting vector |
 
+## Languages
+
+The app is available in **English** and **Portuguese (pt-BR)**. Use the EN | PT switcher in the sidebar, or add `?lang=pt` to the URL. Your choice is saved in `localStorage`.
+
 ## Features
 
 - **3D interactive viewport** with orbit, zoom, and pan controls

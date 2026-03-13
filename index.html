@@ -10,8 +10,8 @@
 </head>
 <body>
   <div id="mobile-bar">
-    <button id="btn-sidebar" title="Open menu">&#9776;</button>
-    <button id="btn-panel" title="Open parameters">&#9881;</button>
+    <button id="btn-sidebar" title="Open menu" data-i18n-title="ui.openMenu">&#9776;</button>
+    <button id="btn-panel" title="Open parameters" data-i18n-title="ui.openParameters">&#9881;</button>
   </div>
   <div id="overlay-backdrop" class="overlay-backdrop"></div>
   <div id="app">
@@ -20,23 +20,27 @@
         <span class="logo">E&amp;M</span>
         <span class="logo-sub">3D Visualizer</span>
         <div class="sidebar-header-actions">
-          <button id="btn-formula-sheet" class="sidebar-action-btn" title="Formula Study Sheet">&#128196; Study Sheet</button>
-          <button id="btn-concept-map" class="sidebar-action-btn" title="Concept Map">&#128279; Concept Map</button>
+          <button id="btn-formula-sheet" class="sidebar-action-btn" title="Formula Study Sheet" data-i18n-title="ui.formulaSheet">&#128196; <span data-i18n="ui.studySheet">Study Sheet</span></button>
+          <button id="btn-concept-map" class="sidebar-action-btn" title="Concept Map" data-i18n-title="ui.conceptMap">&#128279; <span data-i18n="ui.conceptMap">Concept Map</span></button>
         </div>
       </div>
       <div id="sidebar-search">
-        <input type="text" placeholder="Search problems..." id="search-input">
+        <input type="text" placeholder="Search problems..." id="search-input" data-i18n-placeholder="ui.searchPlaceholder">
       </div>
       <div id="sidebar-nav"></div>
     </nav>
 
     <div id="viewport-container">
+      <div id="lang-switcher" class="lang-switcher">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="pt">PT</button>
+      </div>
       <div id="viewport"></div>
       <div id="viewport-controls">
         <div id="toggle-buttons"></div>
         <div id="anim-controls" class="hidden">
-          <button id="play-pause-btn" title="Play/Pause">&#9192;</button>
-          <label>Speed:</label>
+          <button id="play-pause-btn" title="Play/Pause" data-i18n-title="ui.playPause">&#9192;</button>
+          <label data-i18n="ui.speed">Speed:</label>
           <input type="range" id="speed-range" min="0.1" max="3" step="0.1" value="1">
           <span id="speed-val">1.0x</span>
         </div>
@@ -51,7 +55,7 @@
       <div id="equations-section" class="panel-section"></div>
       <div id="limits-section" class="panel-section"></div>
       <div id="params-section" class="panel-section">
-        <h3>Parameters</h3>
+        <h3 data-i18n="ui.parameters">Parameters</h3>
         <div id="sliders"></div>
       </div>
     </aside>
@@ -60,15 +64,15 @@
   <!-- Formula Sheet Overlay -->
   <div id="formula-sheet-overlay" class="full-overlay">
     <div class="overlay-header">
-      <h2>Formula Study Sheet</h2>
+      <h2 data-i18n="ui.formulaSheet">Formula Study Sheet</h2>
       <div class="overlay-header-actions">
-        <button id="formula-sheet-print" class="sidebar-action-btn">&#128424; Print</button>
+        <button id="formula-sheet-print" class="sidebar-action-btn">&#128424; <span data-i18n="ui.print">Print</span></button>
         <button id="formula-sheet-close" class="overlay-close-btn">&times;</button>
       </div>
     </div>
     <div class="overlay-toolbar">
-      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-select-all" checked> Select All</label>
-      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-derivations"> Include Derivations</label>
+      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-select-all" checked> <span data-i18n="ui.selectAll">Select All</span></label>
+      <label class="overlay-checkbox"><input type="checkbox" id="formula-sheet-derivations"> <span data-i18n="ui.includeDerivations">Include Derivations</span></label>
     </div>
     <div id="formula-sheet-chapters" class="overlay-toolbar chapter-checks"></div>
     <div id="formula-sheet-content" class="sheet-content"></div>
@@ -77,7 +81,7 @@
   <!-- Concept Map Overlay -->
   <div id="concept-map-overlay" class="full-overlay">
     <div class="overlay-header">
-      <h2>Concept Map</h2>
+      <h2 data-i18n="ui.conceptMap">Concept Map</h2>
       <button id="concept-map-close" class="overlay-close-btn">&times;</button>
     </div>
     <div id="concept-map-container"></div>
